@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector: 
+    matchLabels:
+      lbtype: external
+  template:
+    metadata:
+      labels:
+        lbtype: external
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: registry.digitalocean.com/remah/be:v23
+          readinessProbe:
+            periodSeconds: 100
+            httpGet:
+              path: /health
+              port: 3001
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 2
+          # resources:
+          #   requests:
+          #     cpu: 50m
+          ports:
+          - containerPort: 3001
+            name: "3001-port"
+          envFrom:
+          - configMapRef: 
+              name: back-store-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-lb
+spec:
+  selector:
+    lbtype: external
+  type: LoadBalancer
+  ports:
+    - name: backend
+      protocol: TCP
+      port: 3001
+      targetPort: 3001
+    - name: frontend
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector: 
+    matchLabels:
+      lbtype: external
+  template:
+    metadata:
+      labels:
+        lbtype: external
+        app: frontend
+        update-version: "24"
+    spec:
+      containers:
+        - name: frontend
+          image: registry.digitalocean.com/remah/be:v23
+          readinessProbe:
+            periodSeconds: 1
+            httpGet:
+              path: /health
+              port: 4000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+          # resources:
+          #   requests:
+          #     cpu: 50m
+          ports:
+          - containerPort: 4000
+            name: "4000-port"
+          envFrom:
+          - configMapRef: 
+              name: front-store-env

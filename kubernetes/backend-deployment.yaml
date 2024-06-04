@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector: 
+    matchLabels:
+      lbtype: external
+  template:
+    metadata:
+      labels:
+        lbtype: external
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: registry.digitalocean.com/remah/be:v22
+          readinessProbe:
+            periodSeconds: 100
+            httpGet:
+              path: /health
+              port: 3001
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 50m
+          ports:
+          - containerPort: 3001
+            name: "3001-port"
+          envFrom:
+          - configMapRef: 
+              name: back-store-env

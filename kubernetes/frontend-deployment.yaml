@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector: 
+    matchLabels:
+      lbtype: external
+  template:
+    metadata:
+      labels:
+        lbtype: external
+        app: frontend
+        update-version: "24"
+    spec:
+      containers:
+        - name: frontend
+          image: registry.digitalocean.com/remah/be:v52
+          readinessProbe:
+            periodSeconds: 100
+            httpGet:
+              path: /health
+              port: 4000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+          resources:
+            requests:
+              cpu: 50m
+          ports:
+          - containerPort: 4000
+            name: "4000-port"
+          envFrom:
+          - configMapRef: 
+              name: front-store-env

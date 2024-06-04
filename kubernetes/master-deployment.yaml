@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: be-deployment
+spec:
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: be
+  template:
+    metadata:
+      labels:
+        app: be
+    spec:
+      containers:
+        - name: be
+          image: registry.digitalocean.com/remah/be:v1
+          env:
+            - name: DB
+              value: "mongodb+srv://Arwaabdelrahem:AOlKUPBeQqrPHpOr@cluster1.bgufy1w.mongodb.net/take-home?retryWrites=true&w=majority"
+            - name: JWT_SECRET
+              value: "secretKey"
+            - name: ELASTICSEARCH_NODE
+              value: "https://9a5e3154e0234c2ca41942b159c61e0e.us-central1.gcp.cloud.es.io"
+            - name: ELASTICSEARCH_API_KEY
+              value: "eGY0azFJOEJTYm1PN1dhVGgzdXg6QklaZ0RfdUtSc09rT1ZmclpQcjh6Zw=="
+            - name: OUTLOOK_CLIENT_ID
+              value: "b35cb875-50fc-4a83-bafe-768b9a2abd14"
+            - name: OUTLOOK_TENANT_ID
+              value: "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
+            - name: OUTLOOK_CLIENT_SECRET
+              value: "z2L8Q~i9R9y~7DcEJN0KsU_OTDZA1vpPXAwRvaTN"
+            - name: OUTLOOK_URL
+              value: "https://graph.microsoft.com/v1.0/me"
+            - name: FACEBOOK_APP_ID
+              value: "360583746056838"
+            - name: FACEBOOK_URL
+              value: "https://graph.facebook.com/me"
+            - name: FACEBOOK_APP_SECRET
+              value: "23e15e8079696bfb8649274b0c8ab0df"
+            - name: GOOGLE_CLIENT_ID
+              value: "822381817215-monsk018pophl5kgduhgru8t5sbt46kb.apps.googleusercontent.com"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "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"
+            - name: GOOGLE_URL
+              value: "https://www.googleapis.com/oauth2/v1/userinfo?alt=json"
+            - name: OUTLOOK_MESSAGES_URL
+              value: "https://graph.microsoft.com/v1.0/me/messages?$top=50"
+            - name: OUTLOOK_SUBSCRIPTION_URL
+              value: "https://graph.microsoft.com/v1.0/subscriptions"
+            - name: OUTLOOK_NOTIFICATION_URL
+              value: "https://api.remah.xyz/auth/outlook/notification"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: be-service
+spec:
+  selector:
+    app: be
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8001
+      targetPort: 8001
+       
